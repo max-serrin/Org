@@ -490,11 +490,16 @@ namespace Reference
                 imb = new Bitmap(pictureBox1.ImageLocation);
                 double ratio;
                 if (imb.Width > maxWidth || imb.Height > maxHeight)
-                    ratio = Math.Min((double)imb.Width / maxWidth, imb.Height / maxHeight);
-                else
-                    ratio = Math.Min((double)maxWidth / imb.Width, maxHeight / imb.Height);
-                this.Width = (int)Math.Max(MIN_WIDTH, imb.Width * ratio);
-                this.Height = (int)Math.Max(MIN_HEIGHT, imb.Height * ratio);
+                {
+                    ratio = Math.Max((double)imb.Width / maxWidth, (double)imb.Height / maxHeight);
+                    this.Width = (int)Math.Max(MIN_WIDTH, imb.Width / ratio);
+                    this.Height = (int)Math.Max(MIN_HEIGHT, imb.Height / ratio);
+                }
+                else if (imb.Width <= maxWidth && imb.Height <= maxHeight)
+                {
+                    this.Width = imb.Width;
+                    this.Height = imb.Height;
+                }
             }
         }
     }
