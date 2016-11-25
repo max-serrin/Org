@@ -12,14 +12,29 @@ namespace Reference
 {
     public partial class Settings : Form
     {
-        public int maxWidth, maxHeight;
+        // Global Variables
+        public int maxWidth, maxHeight;                 // Defined in parent form
         public Boolean onTop;
         public int hh, mm, ss;
         public int timerBuffer;
         public Boolean copy, searchAll;
 
-        private Form1 parentForm;
+        private Form1 parentForm;                       // Parent form to run public functions
 
+        /// <summary>
+        /// Current settings are passed into to settigns formed, displayed and changed. 
+        /// Setting variables are public and the returning application is expected to grab them before destroying the form.
+        /// </summary>
+        /// <param name="parentForm"></param>
+        /// <param name="maxWidth"></param>
+        /// <param name="maxHeight"></param>
+        /// <param name="onTop"></param>
+        /// <param name="hh"></param>
+        /// <param name="mm"></param>
+        /// <param name="ss"></param>
+        /// <param name="timerBuffer"></param>
+        /// <param name="copy"></param>
+        /// <param name="searchAll"></param>
         public Settings(Form1 parentForm, int maxWidth, int maxHeight, Boolean onTop, int hh, int mm, int ss, int timerBuffer, Boolean copy, Boolean searchAll)
         {
             InitializeComponent();
@@ -32,6 +47,11 @@ namespace Reference
             this.searchAll = searchAll;
         }
 
+        /// <summary>
+        /// Sets visual form elements to specific values based on setting variables.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Settings_Load(object sender, EventArgs e)
         {
             tbMaxWidth.Text = maxWidth.ToString(); tbMaxHeight.Text = maxHeight.ToString();
@@ -88,6 +108,11 @@ namespace Reference
             cbSearchAll.Checked = searchAll;
         }
 
+        /// <summary>
+        /// Handle change of max width. Save parsed integers.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void tbMaxWidth_TextChanged(object sender, EventArgs e)
         {
             int ret;
@@ -95,6 +120,11 @@ namespace Reference
                 maxWidth = ret;
         }
 
+        /// <summary>
+        /// Handle change of max height. Save parsed integers.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void tbMaxHeight_TextChanged(object sender, EventArgs e)
         {
             int ret;
@@ -102,100 +132,126 @@ namespace Reference
                 maxHeight = ret;
         }
 
+        /// <summary>
+        /// Handle change of on top. Save boolean value of checked property.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void cbOnTop_CheckedChanged(object sender, EventArgs e)
         {
             onTop = cbOnTop.Checked;
         }
 
+        /// <summary>
+        /// Handle change of search option. Save boolean value of checked property.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
             searchAll = cbSearchAll.Checked;
         }
 
+        /// <summary>
+        /// Check key press parameter, close form if Enter is received.
+        /// </summary>
+        /// <param name="e"></param>
+        private void checkForEnter(KeyEventArgs e)
+        {
+            if (e.KeyData == Keys.Enter)
+            {
+                this.Close();
+            }
+        }
+
+        /// <summary>
+        /// Handles KeyDown events across form elements.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Settings_KeyDown(object sender, KeyEventArgs e)
+        {
+            checkForEnter(e);
+        }
+
+        /// <summary>
+        /// Handles change of timer textbox.
+        /// Attempts to parse a string of some format split twice by ':'.
+        /// First parsed integer will be store as the hours, second as the minutes and third as the seconds.
+        /// Failed attempts to parse information will result in old values being retained.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void tbTimer_TextChanged(object sender, EventArgs e)
         {
             string[] parts = tbTimer.Text.Split(':');
-            int hh_, mm_, ss_;
-            if (!int.TryParse(parts[0], out hh_))
-                return;
-            if (!int.TryParse(parts[1], out mm_))
-                return;
-            if (!int.TryParse(parts[2], out ss_))
-                return;
+            int hh_ = hh, mm_ = mm, ss_ = ss;
+            if (parts.Length == 3)
+            {
+                if (!int.TryParse(parts[0], out hh_))
+                    return;
+                if (!int.TryParse(parts[1], out mm_))
+                    return;
+                if (!int.TryParse(parts[2], out ss_))
+                    return;
+            }
             hh = hh_; mm = mm_; ss = ss_;
         }
 
+        /// <summary>
+        /// Handles changes made to the trackbar.
+        /// Values 0-12 on the trackbar set the timer textbox to predetermined values.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void tTimerTrackBar_Scroll(object sender, EventArgs e)
         {
+            hh = 0; mm = 0; ss = 0;
             switch (tTimerTrackBar.Value)
             {
                 case 0:
-                    hh = 0;
-                    mm = 0;
                     ss = 15;
                     break;
                 case 1:
-                    hh = 0;
-                    mm = 0;
                     ss = 30;
                     break;
                 case 2:
-                    hh = 0;
                     mm = 1;
-                    ss = 0;
                     break;
                 case 3:
-                    hh = 0;
                     mm = 1;
                     ss = 30;
                     break;
                 case 4:
-                    hh = 0;
                     mm = 2;
-                    ss = 0;
                     break;
                 case 5:
-                    hh = 0;
                     mm = 2;
                     ss = 30;
                     break;
                 case 6:
-                    hh = 0;
                     mm = 3;
-                    ss = 0;
                     break;
                 case 7:
-                    hh = 0;
                     mm = 5;
-                    ss = 0;
                     break;
                 case 8:
-                    hh = 0;
                     mm = 10;
-                    ss = 0;
                     break;
                 case 9:
-                    hh = 0;
                     mm = 15;
-                    ss = 0;
                     break;
                 case 10:
-                    hh = 0;
                     mm = 30;
-                    ss = 0;
                     break;
                 case 11:
                     hh = 1;
-                    mm = 0;
-                    ss = 0;
                     break;
                 case 12:
                     hh = 1;
                     mm = 30;
-                    ss = 0;
                     break;
                 default:
-                    hh = 0;
                     mm = 1;
                     ss = 30;
                     break;
@@ -204,6 +260,11 @@ namespace Reference
             tbTimer.Text = parentForm.CreateTimerString(hh, mm, ss, 2);
         }
 
+        /// <summary>
+        /// Handle changes to the timer buffer text box. Save parsed integers.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void tbTimerBuffer_TextChanged(object sender, EventArgs e)
         {
             int ret;
@@ -211,6 +272,11 @@ namespace Reference
                 timerBuffer = ret;
         }
 
+        /// <summary>
+        /// Handle changes to the copy/cut check box. Save boolean value of checked property.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void cbCopy_CheckedChanged(object sender, EventArgs e)
         {
             copy = cbCopy.Checked;

@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.tbTimer = new System.Windows.Forms.TextBox();
             this.tTimerTrackBar = new System.Windows.Forms.TrackBar();
             this.tbMaxWidth = new System.Windows.Forms.TextBox();
@@ -41,8 +42,9 @@
             this.tbTimerBuffer = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
-            this.cbCopy = new System.Windows.Forms.CheckBox();
             this.cbSearchAll = new System.Windows.Forms.CheckBox();
+            this.cbCopy = new System.Windows.Forms.CheckBox();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.tTimerTrackBar)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -52,40 +54,46 @@
             // tbTimer
             // 
             this.tbTimer.Location = new System.Drawing.Point(169, 16);
-            this.tbTimer.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.tbTimer.Margin = new System.Windows.Forms.Padding(2);
             this.tbTimer.Name = "tbTimer";
             this.tbTimer.Size = new System.Drawing.Size(92, 20);
             this.tbTimer.TabIndex = 0;
             this.tbTimer.TextChanged += new System.EventHandler(this.tbTimer_TextChanged);
+            this.tbTimer.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Settings_KeyDown);
             // 
             // tTimerTrackBar
             // 
             this.tTimerTrackBar.Location = new System.Drawing.Point(8, 35);
-            this.tTimerTrackBar.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.tTimerTrackBar.Margin = new System.Windows.Forms.Padding(2);
             this.tTimerTrackBar.Maximum = 12;
             this.tTimerTrackBar.Name = "tTimerTrackBar";
             this.tTimerTrackBar.Size = new System.Drawing.Size(250, 45);
             this.tTimerTrackBar.TabIndex = 1;
             this.tTimerTrackBar.TickStyle = System.Windows.Forms.TickStyle.Both;
             this.tTimerTrackBar.Scroll += new System.EventHandler(this.tTimerTrackBar_Scroll);
+            this.tTimerTrackBar.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Settings_KeyDown);
             // 
             // tbMaxWidth
             // 
             this.tbMaxWidth.Location = new System.Drawing.Point(66, 21);
-            this.tbMaxWidth.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.tbMaxWidth.Margin = new System.Windows.Forms.Padding(2);
             this.tbMaxWidth.Name = "tbMaxWidth";
             this.tbMaxWidth.Size = new System.Drawing.Size(52, 20);
             this.tbMaxWidth.TabIndex = 3;
+            this.toolTip1.SetToolTip(this.tbMaxWidth, "Maximum width to which the window will resize.");
             this.tbMaxWidth.TextChanged += new System.EventHandler(this.tbMaxWidth_TextChanged);
+            this.tbMaxWidth.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Settings_KeyDown);
             // 
             // tbMaxHeight
             // 
             this.tbMaxHeight.Location = new System.Drawing.Point(200, 21);
-            this.tbMaxHeight.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.tbMaxHeight.Margin = new System.Windows.Forms.Padding(2);
             this.tbMaxHeight.Name = "tbMaxHeight";
             this.tbMaxHeight.Size = new System.Drawing.Size(52, 20);
             this.tbMaxHeight.TabIndex = 4;
+            this.toolTip1.SetToolTip(this.tbMaxHeight, "Maximum height to which the window will resize.");
             this.tbMaxHeight.TextChanged += new System.EventHandler(this.tbMaxHeight_TextChanged);
+            this.tbMaxHeight.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Settings_KeyDown);
             // 
             // label2
             // 
@@ -96,6 +104,7 @@
             this.label2.Size = new System.Drawing.Size(58, 13);
             this.label2.TabIndex = 6;
             this.label2.Text = "Max Width";
+            this.toolTip1.SetToolTip(this.label2, "Maximum width to which the window will resize.");
             // 
             // label3
             // 
@@ -106,18 +115,21 @@
             this.label3.Size = new System.Drawing.Size(61, 13);
             this.label3.TabIndex = 7;
             this.label3.Text = "Max Height";
+            this.toolTip1.SetToolTip(this.label3, "Maximum height to which the window will resize.");
             // 
             // cbOnTop
             // 
             this.cbOnTop.AutoSize = true;
             this.cbOnTop.Location = new System.Drawing.Point(9, 48);
-            this.cbOnTop.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.cbOnTop.Margin = new System.Windows.Forms.Padding(2);
             this.cbOnTop.Name = "cbOnTop";
             this.cbOnTop.Size = new System.Drawing.Size(98, 17);
             this.cbOnTop.TabIndex = 8;
             this.cbOnTop.Text = "Always On Top";
+            this.toolTip1.SetToolTip(this.cbOnTop, "Check to keep the window on top of all other windows.");
             this.cbOnTop.UseVisualStyleBackColor = true;
             this.cbOnTop.CheckedChanged += new System.EventHandler(this.cbOnTop_CheckedChanged);
+            this.cbOnTop.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Settings_KeyDown);
             // 
             // groupBox1
             // 
@@ -127,9 +139,9 @@
             this.groupBox1.Controls.Add(this.label3);
             this.groupBox1.Controls.Add(this.label2);
             this.groupBox1.Location = new System.Drawing.Point(6, 6);
-            this.groupBox1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.groupBox1.Margin = new System.Windows.Forms.Padding(2);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Padding = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.groupBox1.Padding = new System.Windows.Forms.Padding(2);
             this.groupBox1.Size = new System.Drawing.Size(268, 77);
             this.groupBox1.TabIndex = 9;
             this.groupBox1.TabStop = false;
@@ -143,9 +155,9 @@
             this.groupBox2.Controls.Add(this.tbTimer);
             this.groupBox2.Controls.Add(this.tTimerTrackBar);
             this.groupBox2.Location = new System.Drawing.Point(6, 87);
-            this.groupBox2.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.groupBox2.Margin = new System.Windows.Forms.Padding(2);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Padding = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.groupBox2.Padding = new System.Windows.Forms.Padding(2);
             this.groupBox2.Size = new System.Drawing.Size(268, 112);
             this.groupBox2.TabIndex = 10;
             this.groupBox2.TabStop = false;
@@ -160,15 +172,17 @@
             this.label4.Size = new System.Drawing.Size(131, 13);
             this.label4.TabIndex = 4;
             this.label4.Text = "Seconds Between Images";
+            this.toolTip1.SetToolTip(this.label4, "Amount of rest time in seconds between images once the timer runs out.");
             // 
             // tbTimerBuffer
             // 
             this.tbTimerBuffer.Location = new System.Drawing.Point(169, 85);
-            this.tbTimerBuffer.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.tbTimerBuffer.Margin = new System.Windows.Forms.Padding(2);
             this.tbTimerBuffer.Name = "tbTimerBuffer";
             this.tbTimerBuffer.Size = new System.Drawing.Size(92, 20);
             this.tbTimerBuffer.TabIndex = 3;
             this.tbTimerBuffer.TextChanged += new System.EventHandler(this.tbTimerBuffer_TextChanged);
+            this.tbTimerBuffer.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Settings_KeyDown);
             // 
             // label1
             // 
@@ -179,6 +193,7 @@
             this.label1.Size = new System.Drawing.Size(94, 13);
             this.label1.TabIndex = 2;
             this.label1.Text = "Timer Reset Value";
+            this.toolTip1.SetToolTip(this.label1, "Enter a timer in the form HH:MM:SS or H:M:S.");
             // 
             // groupBox3
             // 
@@ -191,20 +206,6 @@
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Control";
             // 
-            // cbCopy
-            // 
-            this.cbCopy.AutoSize = true;
-            this.cbCopy.Checked = true;
-            this.cbCopy.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbCopy.Location = new System.Drawing.Point(9, 18);
-            this.cbCopy.Margin = new System.Windows.Forms.Padding(2);
-            this.cbCopy.Name = "cbCopy";
-            this.cbCopy.Size = new System.Drawing.Size(50, 17);
-            this.cbCopy.TabIndex = 9;
-            this.cbCopy.Text = "Copy";
-            this.cbCopy.UseVisualStyleBackColor = true;
-            this.cbCopy.CheckedChanged += new System.EventHandler(this.cbCopy_CheckedChanged);
-            // 
             // cbSearchAll
             // 
             this.cbSearchAll.AutoSize = true;
@@ -216,8 +217,28 @@
             this.cbSearchAll.Size = new System.Drawing.Size(127, 17);
             this.cbSearchAll.TabIndex = 10;
             this.cbSearchAll.Text = "Search All Directories";
+            this.toolTip1.SetToolTip(this.cbSearchAll, "When checked all directories within a given directory will be searched.\r\nWhen unc" +
+        "hecked, only the top directory will be searched.");
             this.cbSearchAll.UseVisualStyleBackColor = true;
             this.cbSearchAll.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
+            this.cbSearchAll.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Settings_KeyDown);
+            // 
+            // cbCopy
+            // 
+            this.cbCopy.AutoSize = true;
+            this.cbCopy.Checked = true;
+            this.cbCopy.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cbCopy.Location = new System.Drawing.Point(9, 18);
+            this.cbCopy.Margin = new System.Windows.Forms.Padding(2);
+            this.cbCopy.Name = "cbCopy";
+            this.cbCopy.Size = new System.Drawing.Size(50, 17);
+            this.cbCopy.TabIndex = 9;
+            this.cbCopy.Text = "Copy";
+            this.toolTip1.SetToolTip(this.cbCopy, "When checked the image will be copied.\r\nWhen unchcekd the image will be cut.\r\n(Cu" +
+        "t images require the window to be closed\r\nbefore they can be pasted.)");
+            this.cbCopy.UseVisualStyleBackColor = true;
+            this.cbCopy.CheckedChanged += new System.EventHandler(this.cbCopy_CheckedChanged);
+            this.cbCopy.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Settings_KeyDown);
             // 
             // Settings
             // 
@@ -228,10 +249,11 @@
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
-            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "Settings";
             this.Text = "Settings";
             this.Load += new System.EventHandler(this.Settings_Load);
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Settings_KeyDown);
             ((System.ComponentModel.ISupportInitialize)(this.tTimerTrackBar)).EndInit();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
@@ -260,5 +282,6 @@
         private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.CheckBox cbCopy;
         private System.Windows.Forms.CheckBox cbSearchAll;
+        private System.Windows.Forms.ToolTip toolTip1;
     }
 }
