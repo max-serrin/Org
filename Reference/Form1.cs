@@ -30,9 +30,9 @@ namespace Reference
         Bitmap imb;
 
         // Constants
-        public const string TIMER_HEADER = "Time: ";        // Timer string constants
-        public const string TIMER_DIVIDER = ":";
-        public const string TIMER_PAUSED = " (Paused)";
+        private const string TIMER_HEADER = "Time: ";        // Timer string constants
+        private const string TIMER_DIVIDER = ":";
+        private const string TIMER_PAUSED = " (Paused)";
         public const int MIN_WIDTH = 25;                    // Minimum width and height
         public const int MIN_HEIGHT = 25;
 
@@ -64,7 +64,11 @@ namespace Reference
         public Form1()
         {
             InitializeComponent();
-            
+
+            this.FormBorderStyle = FormBorderStyle.None;
+            this.DoubleBuffered = true;
+            this.SetStyle(ControlStyles.ResizeRedraw, true);
+
             // Image
             im = null; imb = null;
 

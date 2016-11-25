@@ -62,6 +62,7 @@
             this.MinimizeBox = false;
             this.Name = "Form1";
             this.ShowIcon = false;
+            this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
             this.Text = "Reference";
             this.TopMost = true;
             this.ResizeEnd += new System.EventHandler(this.Form1_ResizeEnd);
