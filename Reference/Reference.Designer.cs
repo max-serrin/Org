@@ -1,6 +1,6 @@
 ﻿namespace Reference
 {
-    partial class Form1
+    partial class Reference
     {
         /// <summary>
         /// Required designer variable.

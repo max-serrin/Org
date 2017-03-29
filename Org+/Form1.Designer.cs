@@ -31,6 +31,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.openGetRandomHereToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.undoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -47,7 +48,7 @@
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.imageList = new System.Windows.Forms.ListBox();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
-            this.openGetRandomHereToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuStrip2 = new System.Windows.Forms.MenuStrip();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.statusStrip1.SuspendLayout();
@@ -66,7 +67,7 @@
             this.fileToolStripMenuItem,
             this.editToolStripMenuItem,
             this.undoToolStripMenuItem});
-            this.menuStrip1.Location = new System.Drawing.Point(0, 0);
+            this.menuStrip1.Location = new System.Drawing.Point(0, 24);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(727, 24);
             this.menuStrip1.TabIndex = 0;
@@ -80,6 +81,13 @@
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.fileToolStripMenuItem.Text = "File";
             // 
+            // openGetRandomHereToolStripMenuItem
+            // 
+            this.openGetRandomHereToolStripMenuItem.Name = "openGetRandomHereToolStripMenuItem";
+            this.openGetRandomHereToolStripMenuItem.Size = new System.Drawing.Size(197, 22);
+            this.openGetRandomHereToolStripMenuItem.Text = "Open GetRandom Here";
+            this.openGetRandomHereToolStripMenuItem.Click += new System.EventHandler(this.openGetRandomHereToolStripMenuItem_Click);
+            // 
             // editToolStripMenuItem
             // 
             this.editToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -91,7 +99,7 @@
             // settingsToolStripMenuItem
             // 
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
-            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(116, 22);
             this.settingsToolStripMenuItem.Text = "Settings";
             this.settingsToolStripMenuItem.Click += new System.EventHandler(this.settingsToolStripMenuItem_Click);
             // 
@@ -108,7 +116,7 @@
             this.folderList.FormattingEnabled = true;
             this.folderList.Location = new System.Drawing.Point(3, 3);
             this.folderList.Name = "folderList";
-            this.folderList.Size = new System.Drawing.Size(90, 414);
+            this.folderList.Size = new System.Drawing.Size(90, 390);
             this.folderList.TabIndex = 1;
             this.folderList.SelectedIndexChanged += new System.EventHandler(this.folderList_SelectedIndexChanged);
             this.folderList.DoubleClick += new System.EventHandler(this.folderList_DoubleClick);
@@ -120,7 +128,7 @@
             this.pictureBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pictureBox1.Location = new System.Drawing.Point(0, 0);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(619, 446);
+            this.pictureBox1.Size = new System.Drawing.Size(619, 422);
             this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBox1.TabIndex = 2;
             this.pictureBox1.TabStop = false;
@@ -174,7 +182,7 @@
             this.tabControl1.Location = new System.Drawing.Point(0, 0);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(104, 446);
+            this.tabControl1.Size = new System.Drawing.Size(104, 422);
             this.tabControl1.TabIndex = 4;
             // 
             // tabPage1
@@ -183,7 +191,7 @@
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(96, 420);
+            this.tabPage1.Size = new System.Drawing.Size(96, 396);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Folders";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -212,7 +220,7 @@
             // splitContainer1
             // 
             this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitContainer1.Location = new System.Drawing.Point(0, 24);
+            this.splitContainer1.Location = new System.Drawing.Point(0, 48);
             this.splitContainer1.Name = "splitContainer1";
             // 
             // splitContainer1.Panel1
@@ -222,16 +230,17 @@
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.pictureBox1);
-            this.splitContainer1.Size = new System.Drawing.Size(727, 446);
+            this.splitContainer1.Size = new System.Drawing.Size(727, 422);
             this.splitContainer1.SplitterDistance = 104;
             this.splitContainer1.TabIndex = 5;
             // 
-            // openGetRandomHereToolStripMenuItem
+            // menuStrip2
             // 
-            this.openGetRandomHereToolStripMenuItem.Name = "openGetRandomHereToolStripMenuItem";
-            this.openGetRandomHereToolStripMenuItem.Size = new System.Drawing.Size(197, 22);
-            this.openGetRandomHereToolStripMenuItem.Text = "Open GetRandom Here";
-            this.openGetRandomHereToolStripMenuItem.Click += new System.EventHandler(this.openGetRandomHereToolStripMenuItem_Click);
+            this.menuStrip2.Location = new System.Drawing.Point(0, 0);
+            this.menuStrip2.Name = "menuStrip2";
+            this.menuStrip2.Size = new System.Drawing.Size(727, 24);
+            this.menuStrip2.TabIndex = 6;
+            this.menuStrip2.Text = "menuStrip2";
             // 
             // Form1
             // 
@@ -241,6 +250,7 @@
             this.Controls.Add(this.splitContainer1);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.menuStrip1);
+            this.Controls.Add(this.menuStrip2);
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "Form1";
             this.Text = "Form1";
@@ -284,6 +294,7 @@
         private System.Windows.Forms.ToolStripMenuItem editToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openGetRandomHereToolStripMenuItem;
+        private System.Windows.Forms.MenuStrip menuStrip2;
     }
 }
 

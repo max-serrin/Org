@@ -19,7 +19,7 @@ namespace Reference
         public int timerBuffer;
         public Boolean copy, searchAll;
 
-        private Form1 parentForm;                       // Parent form to run public functions
+        private Reference parentForm;                       // Parent form to run public functions
 
         /// <summary>
         /// Current settings are passed into to settigns formed, displayed and changed. 
@@ -35,7 +35,7 @@ namespace Reference
         /// <param name="timerBuffer"></param>
         /// <param name="copy"></param>
         /// <param name="searchAll"></param>
-        public Settings(Form1 parentForm, int maxWidth, int maxHeight, Boolean onTop, int hh, int mm, int ss, int timerBuffer, Boolean copy, Boolean searchAll)
+        public Settings(Reference parentForm, int maxWidth, int maxHeight, Boolean onTop, int hh, int mm, int ss, int timerBuffer, Boolean copy, Boolean searchAll)
         {
             InitializeComponent();
             this.parentForm = parentForm;

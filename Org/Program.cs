@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Reference
+namespace Org
 {
     static class Program
     {
@@ -12,11 +14,14 @@ namespace Reference
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main()
+        static void Main(string[] args)
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Reference());
+            if (args.Length > 0)
+                Application.Run(new Org(args[0]));
+            else
+                Application.Run(new Org(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)));
         }
     }
 }

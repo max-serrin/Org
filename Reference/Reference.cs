@@ -11,10 +11,11 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using GetRandomImage;
 using System.Collections.Specialized;
+using MyExtensions;
 
 namespace Reference
 {
-    public partial class Form1 : Form
+    public partial class Reference : Form
     {
         // For dragging and drag drop
         public const int WM_NCLBUTTONDOWN = 0xA1;
@@ -61,7 +62,7 @@ namespace Reference
         /// <summary>
         /// Initialization
         /// </summary>
-        public Form1()
+        public Reference(FileInfo image = null)
         {
             InitializeComponent();
 
@@ -78,8 +79,17 @@ namespace Reference
             onTop = Properties.Settings.Default.onTop;
 
             // Images
-            folderPath = "";
-            pictureBox1.ImageLocation = "";
+            if (ObjectExtensions.Exists(image))
+            {
+                pictureBox1.ImageLocation = image.FullName;
+                folderPath = image.DirectoryName;
+            }
+            else
+            {
+                pictureBox1.ImageLocation = "";
+                folderPath = "";
+            }
+
             searchAll = Properties.Settings.Default.searchAll;
             ril = new RandomImageList(folderPath, searchAll);
             copy = Properties.Settings.Default.copy;
