@@ -37,7 +37,7 @@ namespace Org
 
         private void pictureBox_Click(object sender, MouseEventArgs e)
         {
-            org.pictureBox_MouseClick(sender, e);
+            org.PictureBox_MouseClick(sender, e);
             UpdatePictureBox();
         }
 

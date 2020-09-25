@@ -1,5 +1,26 @@
-﻿namespace Reference
+﻿using System;
+using System.Windows.Forms;
+
+namespace Reference
 {
+    class PictureBoxExtra : System.Windows.Forms.PictureBox
+    {
+        protected override void WndProc(ref Message m)
+        {
+            const int WM_NCHITTEST = 0x0084;
+            const int HTTRANSPARENT = (-1);
+
+            if (m.Msg == WM_NCHITTEST)
+            {
+                m.Result = (IntPtr)HTTRANSPARENT;
+            }
+            else
+            {
+                base.WndProc(ref m);
+            }
+        }
+    }
+
     partial class Reference
     {
         /// <summary>
@@ -29,7 +50,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.pictureBox1 = new PictureBoxExtra();
             this.ttPicturebox1 = new System.Windows.Forms.ToolTip(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
@@ -45,11 +66,13 @@
             this.pictureBox1.TabIndex = 0;
             this.pictureBox1.TabStop = false;
             this.ttPicturebox1.SetToolTip(this.pictureBox1, "Drag & drop an image file or directory.");
-            this.pictureBox1.DragDrop += new System.Windows.Forms.DragEventHandler(this.PictureBox1_DragDrop);
-            this.pictureBox1.DragEnter += new System.Windows.Forms.DragEventHandler(this.PictureBox1_DragEnter);
-            this.pictureBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.PictureBox1_MouseDown);
+            //this.pictureBox1.Click += new System.EventHandler(this.pictureBox1_Click);
+            //this.pictureBox1.DragDrop += new System.Windows.Forms.DragEventHandler(this.PictureBox1_DragDrop);
+            //this.pictureBox1.DragEnter += new System.Windows.Forms.DragEventHandler(this.PictureBox1_DragEnter);
+            //this.pictureBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.PictureBox1_MouseDown);
+
             // 
-            // Form1
+            // Reference
             // 
             this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -60,12 +83,18 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.Name = "Form1";
+            this.Name = "Reference";
             this.ShowIcon = false;
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
             this.Text = "Reference";
             this.TopMost = true;
             this.ResizeEnd += new System.EventHandler(this.Form1_ResizeEnd);
+            this.Click += new System.EventHandler(this.PictureBox1_Click);
+            this.DragDrop += new System.Windows.Forms.DragEventHandler(this.PictureBox1_DragDrop);
+            this.DragEnter += new System.Windows.Forms.DragEventHandler(this.PictureBox1_DragEnter);
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Reference_KeyDown);
+            this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.PictureBox1_MouseDown);
+            this.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.PictureBox1_MouseWheel);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
 
@@ -73,7 +102,7 @@
 
         #endregion
 
-        private System.Windows.Forms.PictureBox pictureBox1;
+        private PictureBoxExtra pictureBox1;
         private System.Windows.Forms.ToolTip ttPicturebox1;
     }
 }

@@ -12,19 +12,20 @@ namespace Org_
 {
     public partial class FullScreen : Form
     {
-        PictureBox pb;
+        PictureBox pb1, pb2;
         Form1 dad;
 
-        public FullScreen(ref PictureBox _pb, Form1 _dad)
+        public FullScreen(ref PictureBox _pb1, ref PictureBox _pb2, Form1 _dad)
         {
             InitializeComponent();
-            pb = _pb;
+            pb1 = _pb1;
+            pb2 = _pb2;
             dad = _dad;
         }
 
         public void updateFS()
         {
-            pictureBox1.ImageLocation = pb.ImageLocation;
+            pictureBox1.ImageLocation = pb1.ImageLocation;
         }
 
         private void pictureBox1_Click(object sender, EventArgs e)

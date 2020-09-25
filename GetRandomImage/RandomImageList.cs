@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using XperiCode.JpegMetadata;
 
 namespace GetRandomImage
 {
@@ -18,6 +17,10 @@ namespace GetRandomImage
         private List<FileInfo> fi;                      // Master file list
         
         public List<string> ext;                        // Extensions to search
+        public List<string> tagWhitelist;
+        public List<string> tagBlacklist;
+        public Boolean useWhitelist, useBlacklist;
+        public string fileNameFilter;
         public int pos;                                 // Index for image list
         public SearchOption so;                         // Search option (to search sub directories or not)
 
@@ -37,6 +40,8 @@ namespace GetRandomImage
 
             // Create the list of extensions
             ext = new List<string> { "*.jpg", "*.jpeg", "*.gif", "*.png", "*.bmp" };
+            tagWhitelist = new List<string> { "Figure" };
+            tagBlacklist = new List<string> { "Explicit" };
 
             // Set Search Option to search all directories
             if (searchAll)
@@ -46,6 +51,8 @@ namespace GetRandomImage
 
             fi = setFileInfo(folderPath);
         }
+
+        public int Count { get { return fi.Count; } }
 
         /// <summary>
         /// Re-randomize the list. 
@@ -64,6 +71,13 @@ namespace GetRandomImage
         {
             folderPath = p;
             Reload();
+        }
+
+        public void Reload(List<FileInfo> fileList)
+        {
+            folderPath = null;
+            di = null;
+            fi = setFileInfo(fileList);
         }
 
         /// <summary>
@@ -94,7 +108,7 @@ namespace GetRandomImage
         /// <returns></returns>
         public FileInfo getNext()
         {
-            if (fi.Count > 0)
+            if (fi?.Count > 0)
             {
                 if (pos == fi.Count - 1)
                     pos = -1;
@@ -110,7 +124,7 @@ namespace GetRandomImage
         /// <returns></returns>
         public FileInfo getPrevious()
         {
-            if (fi.Count > 0)
+            if (fi?.Count > 0)
             {
                 if (pos == 0)
                     pos = fi.Count;
@@ -149,7 +163,7 @@ namespace GetRandomImage
             FileInfo[] fi_ = new FileInfo[fi.Count];
             fi.CopyTo(fi_);
             MyExtensions.Shuffle(fi_, rng);
-            ret = ret.ToList<FileInfo>();
+            ret = ret.ToList();
             if (x < fi.Count) ret.RemoveRange(x, fi.Count - 1);
             return ret;
         }
@@ -162,12 +176,28 @@ namespace GetRandomImage
             List<FileInfo> fi = new List<FileInfo>();
             if (folderpath != "" && Directory.Exists(folderpath))
             {
-
                 di = new DirectoryInfo(folderpath);
                 fi = new List<FileInfo>();
 
-                foreach (string s in ext)
-                    fi.AddRange(di.EnumerateFiles(s, so).ToList());
+                //if (useWhitelist || useBlacklist)
+                //{
+                //    foreach (var f in ext.Where(t => t == "*.jpg" || t == "*.jpeg").SelectMany(e => (di.EnumerateFiles(e, so))))
+                //    {
+                //        try
+                //        {
+                //            var v = new JpegMetadataAdapter(f.FullName).Metadata;
+                //            if (!((!tagWhitelist.Any(t => v.Keywords.Contains(t)) && useWhitelist) || (tagBlacklist.Any(t => v.Keywords.Contains(t)) && useBlacklist)))
+                //            //if (tagWhitelist.Any(t => v.Keywords.Contains(t)) && !tagBlacklist.Any(t => v.Keywords.Contains(t)))
+                //                fi.Add(f);
+                //        }
+                //        catch { }
+                //    }
+                //    fi.AddRange(ext.Where(t => t != "*.jpg" && t != "*.jpeg").SelectMany(e => (di.EnumerateFiles(e, so))));
+                //}
+                //else
+                //{
+                    fi.AddRange(ext.SelectMany(e => (di.EnumerateFiles(e, so))));
+                //}
 
                 MyExtensions.Shuffle(fi, rng);
                 pos = -1;
@@ -177,6 +207,14 @@ namespace GetRandomImage
                 di = null;
                 fi = null;
             }
+
+            return fi;
+        }
+
+        private List<FileInfo> setFileInfo(List<FileInfo> fi)
+        {
+            MyExtensions.Shuffle(fi, rng);
+            pos = -1;
 
             return fi;
         }

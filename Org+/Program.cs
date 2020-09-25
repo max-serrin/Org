@@ -21,7 +21,7 @@ namespace Org_
             if (args.Length > 0)
                 Application.Run(new Form1(args[0]));
             else
-                Application.Run(new Form1(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)));
+                Application.Run(new Form1(null));
         }
     }
 }

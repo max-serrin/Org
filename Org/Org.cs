@@ -10,66 +10,135 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using MyExtensions;
+
+using Modes = Org.Enumeration.Modes;
+using Actions = Org.Enumeration.Actions;
+using HotkeysSettings = Org.Enumeration.HotkeySettings;
+using UndoActions = Org.Enumeration.UndoActions;
+using System.Diagnostics;
+using System.Collections.Specialized;
 
 namespace Org
 {
     public partial class Org : Form
     {
         private Images images;
-        private Traverser<FileInfo> traverser;
-        private Mode mode;
+        internal Traverser<FileInfo> traverser;
+        private Modes mode;
 
         private ContextMenu pictureBoxContextMenu;
         private ContextMenu treeViewContextMenu;
+        private TreeNode favorites;
         private FullScreen fullScreen;
+        private Settings settings;
 
-        private Delegate LeftClick;
-        private Delegate RightClick;
-        private Delegate MiddleClick;
-
-        private Dictionary<Keys, string> hotkeys;
-        private Regex scriptRegex;
-
-        private enum Mode
-        {
-            Browse,
-            Organize,
-            Randomize
-        };
-
+        internal Dictionary<Tuple<Keys, Modes>, HotkeysSettings> hotkeys;
+        private Stack<UndoActions> undoHistory;
+        
         public Org(string directory)
         {
+            // Initialization
             InitializeComponent();
+            KeyPreview = true;
 
-            hotkeys = new Dictionary<Keys, string>();
-            foreach (Keys key in Enum.GetValues(typeof(Keys)))
+            // Hotkeys Setup
+            hotkeys = new Dictionary<Tuple<Keys, Modes>, HotkeysSettings>();
+            
+            foreach (Keys key in DataExtensions.GetCommonKeysAndButtons())
             {
-                if (!hotkeys.ContainsKey(key))
-                    hotkeys.Add(key, "");
+                foreach (Modes mode in Enum.GetValues(typeof(Modes)))
+                {
+                    hotkeys.Add(new Tuple<Keys, Modes>(key, mode), new HotkeysSettings(key));
+                    hotkeys.Add(new Tuple<Keys, Modes>(key | Keys.Control, mode), new HotkeysSettings(key | Keys.Control));
+                    hotkeys.Add(new Tuple<Keys, Modes>(key | Keys.Control | Keys.Shift, mode), new HotkeysSettings(key | Keys.Control | Keys.Shift));
+                    hotkeys.Add(new Tuple<Keys, Modes>(key | Keys.Control | Keys.Alt, mode), new HotkeysSettings(key | Keys.Control | Keys.Alt));
+                    hotkeys.Add(new Tuple<Keys, Modes>(key | Keys.Control | Keys.Shift | Keys.Alt, mode), new HotkeysSettings(key | Keys.Control | Keys.Shift | Keys.Alt));
+                    hotkeys.Add(new Tuple<Keys, Modes>(key | Keys.Shift, mode), new HotkeysSettings(key | Keys.Shift));
+                    hotkeys.Add(new Tuple<Keys, Modes>(key | Keys.Shift | Keys.Alt, mode), new HotkeysSettings(key | Keys.Shift | Keys.Alt));
+                    hotkeys.Add(new Tuple<Keys, Modes>(key | Keys.Alt, mode), new HotkeysSettings(key | Keys.Alt));
+                }
             }
-            hotkeys[Keys.Left] = "previous";
-            hotkeys[Keys.Right] = "next";
-            hotkeys[Keys.A] = "move, %current_full%, %current_directory%\\best\\%current_name%";
-            scriptRegex = new Regex(@"(?<="")\w[\w\s]*(?="")|\w+|""[\w\s]*""");
-
-            pictureBoxContextMenu = new ContextMenu();
-            pictureBoxContextMenu.MenuItems.Add("Randomize", pictureBoxContextMenu_Randomize_onClick);
-            pictureBoxContextMenu.MenuItems.Add("Reference", pictureBoxContextMenu_Reference_onClick);
-            pictureBox.ContextMenu = pictureBoxContextMenu;
-
-            treeViewContextMenu = new ContextMenu();
-            treeViewContextMenu.MenuItems.Add("Randomize", treeViewContextMenu_Randomize_onClick);
-            folderBrowser.ContextMenu = treeViewContextMenu;
-            fullScreen = new FullScreen(pictureBox, this);
+            undoHistory = new Stack<UndoActions>();
 
             pictureBox.MouseWheel += PictureBox_MouseWheel;
-            mode = Mode.Browse;
+
+            // PictureBox Context Menu Setup
+            pictureBoxContextMenu = new ContextMenu();
+            pictureBoxContextMenu.MenuItems.Add("Randomize", PictureBoxContextMenu_Randomize_onClick);
+            pictureBoxContextMenu.MenuItems.Add("Reference", PictureBoxContextMenu_Reference_onClick);
+            pictureBox.ContextMenu = pictureBoxContextMenu;
+
+            // TreeView Context Menu Setup
+            treeViewContextMenu = new ContextMenu();
+            treeViewContextMenu.MenuItems.Add("Add to Favorites", TreeViewContextMenu_AddToFavorites_onClick);
+            treeViewContextMenu.MenuItems.Add("Remove from Favorites", TreeViewContextMenu_RemoveFromFavorites_onClick);
+            treeViewContextMenu.MenuItems.Add("Randomize", TreeViewContextMenu_Randomize_onClick);
+            folderBrowser.ContextMenu = treeViewContextMenu;
+
+            //Dialogs
+            fullScreen = new FullScreen(pictureBox, this);
+            settings = new Settings(this);
+
+            // Mode Setup
+            mode = Modes.Browse;
             browseToolStripMenuItem.Checked = true;
+
+            browseToolStripMenuItem.Tag = Modes.Browse;
+            organizeToolStripMenuItem.Tag = Modes.Organize;
+            randomizeToolStripMenuItem.Tag = Modes.Randomize;
+
+            // Load Images
             images = new Images(directory);
+
+            // TreeView Setup
+            folderBrowser.Nodes.Clear();
+            favorites = new TreeNode("Favorites")
+            {
+                Tag = ""
+            };
+            folderBrowser.Nodes.Add(favorites);
             ListDirectory(folderBrowser);
         }
 
-        private void hotkeyScriptParser(string script)
+        internal void UpdateHotkeyDictionary()
+        {
+
+        }
+
+        private void TreeViewContextMenu_RemoveFromFavorites_onClick(object sender, EventArgs e)
+        {
+            if (folderBrowser.SelectedNode.Tag.Exists())
+            {   // Selected node is part of the favorites node
+                if (folderBrowser.SelectedNode.Parent.Exists())
+                {   // Selected node is not the favorite node itself
+                    favorites.Nodes.Remove(folderBrowser.SelectedNode);
+                }
+            }
+            else
+            {
+                // Figure out which favorite node matches the selected node and remove it
+                foreach (TreeNode node in favorites.Nodes)
+                {
+                    if (node.Tag.Equals(folderBrowser.SelectedNode.FullPath))
+                    {
+                        favorites.Nodes.Remove(node);
+                        break;
+                    }
+                }
+            }
+        }
+
+        private void TreeViewContextMenu_AddToFavorites_onClick(object sender, EventArgs e)
+        {
+            TreeNode favorite = new TreeNode(folderBrowser.SelectedNode.Text)
+            {
+                Tag = folderBrowser.SelectedNode.FullPath
+            };
+            favorites.Nodes.Add(favorite);
+        }
+
+        private void HotkeyScriptParser(string script)
         {
             foreach (string line in Regex.Split(script, "\r\n"))
             {
@@ -109,19 +178,22 @@ namespace Org
             }
         }
 
-        private void pictureBoxContextMenu_Reference_onClick(object sender, EventArgs e)
+        private void PictureBoxContextMenu_Reference_onClick(object sender, EventArgs e)
         {
             new Reference.Reference(traverser.GetCurrent()).Show();
         }
 
-        private void treeViewContextMenu_Randomize_onClick(object sender, EventArgs e)
+        private void TreeViewContextMenu_Randomize_onClick(object sender, EventArgs e)
         {
-            randomizeToolStripMenuItem_Click(sender, e);
+            // Set randomize mode
+            SetMode(Modes.Randomize);
+            // Simluate a left click on the node
+            FolderBrowser_MouseClick(sender, new MouseEventArgs(MouseButtons.Left, 1, 0, 0, 0));
         }
 
-        private void pictureBoxContextMenu_Randomize_onClick(object sender, EventArgs e)
+        private void PictureBoxContextMenu_Randomize_onClick(object sender, EventArgs e)
         {
-            randomizeToolStripMenuItem_Click(sender, e);
+            RandomizeToolStripMenuItem_Click(sender, e);
         }
 
         public void PictureBox_MouseWheel(object sender, MouseEventArgs e)
@@ -138,7 +210,6 @@ namespace Org
 
         private void ListDirectory(TreeView treeView)
         {
-            treeView.Nodes.Clear();
             foreach (DriveInfo driveInfo in DriveInfo.GetDrives())
             {
                 treeView.Nodes.Add(new TreeNode(driveInfo.Name));
@@ -165,12 +236,25 @@ namespace Org
             }
         }
 
-        private void folderBrowser_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+        private void FolderBrowser_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
-            images = new Images(e.Node.FullPath);
-
+            // Set the selected node (right clicks don't do this automatically)
+            ((TreeView)sender).SelectedNode = e.Node;
+            
+            // If we left clicked, load the directory
             if (e.Button.Equals(MouseButtons.Left))
             {
+                if (e.Node.Tag.Exists())
+                {   // Exists in the favorite node
+                    if (e.Node.Parent.Exists())
+                    {   // Is not the favorite node itself
+                        images = new Images((string)e.Node.Tag);
+                    }
+                }
+                else
+                {   // Is a directory
+                    images = new Images(e.Node.FullPath);
+                }
                 LoadDirectory();
             }
 
@@ -178,7 +262,7 @@ namespace Org
 
         private void LoadDirectory()
         {
-            if (mode == Mode.Randomize)
+            if (mode == Modes.Randomize)
             {
                 traverser = (Traverser<FileInfo>)images.GetRandomizedTraverser();
             }
@@ -186,19 +270,11 @@ namespace Org
             {
                 traverser = (Traverser<FileInfo>)images.GetTraverser();
             }
-
-            try
-            {
-                pictureBox.ImageLocation = traverser.GetCurrent().FullName;
-            }
-            catch (NullReferenceException ex)
-            {
-                pictureBox.ImageLocation = "";
-            }
-            toolStripStatusLabel1.Text = traverser.Count().ToString() + " items";
+            pictureBox.ImageLocation = traverser?.GetCurrent()?.FullName ?? "";
+            statusLabel_Index.Text = traverser.Count.ToString() + " items";
         }
 
-        private void folderBrowser_BeforeExpand(object sender, TreeViewCancelEventArgs e)
+        private void FolderBrowser_BeforeExpand(object sender, TreeViewCancelEventArgs e)
         {
             foreach (TreeNode node in e.Node.Nodes)
             {
@@ -206,28 +282,29 @@ namespace Org
             }
         }
 
-        private void browseToolStripMenuItem_Click(object sender, EventArgs e)
+        private void BrowseToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            UncheckMode();
-            mode = Mode.Browse;
-            browseToolStripMenuItem.Checked = true;
+            SetMode(Modes.Browse);
             LoadDirectory();
         }
 
-        private void organizeToolStripMenuItem_Click(object sender, EventArgs e)
+        private void OrganizeToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            UncheckMode();
-            mode = Mode.Organize;
-            organizeToolStripMenuItem.Checked = true;
+            SetMode(Modes.Organize);
             LoadDirectory();
         }
 
-        private void randomizeToolStripMenuItem_Click(object sender, EventArgs e)
+        private void RandomizeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SetMode(Modes.Randomize);
+            LoadDirectory();
+        }
+
+        private void SetMode(Modes _mode)
         {
             UncheckMode();
-            mode = Mode.Randomize;
-            randomizeToolStripMenuItem.Checked = true;
-            LoadDirectory();
+            mode = _mode;
+            Controls.OfType<ToolStripMenuItem>().Where(menuItem => menuItem.Tag.Equals(_mode)).FirstOrDefault().Checked = true;
         }
 
         private void UncheckMode()
@@ -240,54 +317,236 @@ namespace Org
 
         private void Org_KeyDown(object sender, KeyEventArgs e)
         {
-            string script = hotkeys[e.KeyCode];
-            if (script != "")
+            if (hotkeys.TryGetValue(new Tuple<Keys, Modes>(e.KeyData, mode), out HotkeysSettings hotkeySettings))
             {
-                hotkeyScriptParser(script);
-                e.Handled = true;
+                //MessageBox.Show(hotkeySettings.Action.ToString());
+                switch (hotkeySettings.Action)
+                {
+                    case Actions.Move:
+                        {
+                            // Parse destination directory string
+                            DirectoryInfo destination = null;
+                            string directoryFullName = hotkeySettings.Arguments[0];
+                            List<string> arguments = directoryFullName.Split('\\').ToList();
+                            if (arguments[0].Equals(".") || arguments[0].Equals(".."))
+                            {   // Process a local path
+                                if (arguments[0].Equals("."))
+                                {
+                                    destination = traverser.GetCurrent().Directory;
+                                }
+                                else if (arguments[0].Equals(".."))
+                                {
+                                    destination = traverser.GetCurrent().Directory.Parent;
+                                }
+
+                                arguments.RemoveAt(0);
+                                string secondHalf = "";
+                                foreach (string argument in arguments)
+                                {   // Walk backward for every \..\
+                                    if (argument.Equals(".."))
+                                    {
+                                        destination = destination.Parent;
+                                    }
+                                    else
+                                    {   // TODO test backslash position
+                                        secondHalf += "\\" + argument;
+                                    }
+                                }
+                                // J:\dtm\6.Organize\Folder 1\
+                                // ..\..\1.Real\1.Best\tass\images\
+
+                                directoryFullName = destination.FullName + secondHalf;
+                            }
+
+                            // Attempt to get the directory info or create the directory
+                            if (Directory.Exists(directoryFullName))
+                                destination = new DirectoryInfo(directoryFullName);
+                            else
+                                destination = Directory.CreateDirectory(directoryFullName);
+                            if (destination.Exists())
+                            {
+                                UndoActions undoAction = new UndoActions();
+                                undoAction.Arguments.Add(traverser.Index.ToString());                                   // Current index
+                                undoAction.Arguments.Add(traverser.GetCurrent().FullName);                              // From
+                                undoAction.Arguments.Add(destination.FullName + "\\" + traverser.GetCurrent().Name);    // To
+
+                                // Move the file
+                                File.Move(traverser.GetCurrent().FullName, destination.FullName + "\\" + traverser.GetCurrent().Name);
+
+                                // Tell traverser to remove the file and get the new item that has taken its place
+                                pictureBox.ImageLocation = traverser?.RemoveCurrent()?.FullName ?? "";
+
+                                // Add the action to the undo history
+                                undoHistory.Push(undoAction);
+                            }
+                            break;
+                        }
+                    case Actions.Copy:
+                        {
+                            Clipboard.Clear();
+                            Clipboard.SetFileDropList(new StringCollection() { pictureBox.ImageLocation });
+                            break;
+                        }
+                    case Actions.CopyData:
+                        {
+                            // TODO
+                            break;
+                        }
+                    case Actions.Cut:
+                        {
+                            byte[] moveEffect = new byte[] { 2, 0, 0, 0 };
+                        MemoryStream dropEffect = new MemoryStream();
+                        dropEffect.Write(moveEffect, 0, moveEffect.Length);
+
+                        DataObject data = new DataObject();
+                        data.SetFileDropList(new StringCollection() { pictureBox.ImageLocation });
+                        data.SetData("Preferred DropEffect", dropEffect);
+
+                        Clipboard.Clear();
+                        Clipboard.SetDataObject(data, true);
+
+                        // TODO Implement pasting... ugh
+                        // TODO Remove the file, (how to know it's left? monitor the file until it moves?)
+                        break;
+                        }
+                    case Actions.Undo:
+                        {
+                            // TODO (create undo stack and undo reactions)
+                            if (undoHistory.Count > 0)
+                            {
+
+                            }
+                            break;
+                        }
+                    case Actions.SelectAll:
+                        {
+                            // TODO (includes adding functionality to Move/Copy/Cut/Delete)
+                            break;
+                        }
+                    case Actions.SelectAllPrevious:
+                        {
+                            // TODO
+                            break;
+                        }
+                    case Actions.SelectAllFollowing:
+                        {
+                            // TODO
+                            break;
+                        }
+                    case Actions.Delete:
+                        {
+                            if (((Microsoft.VisualBasic.FileIO.RecycleOption)hotkeySettings.Tag).Equals(Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin))
+                            {
+                                UndoActions undoAction = new UndoActions();
+                                undoAction.Arguments.Add(traverser.Index.ToString());
+                                undoAction.Arguments.Add(traverser.GetCurrent().FullName);
+                                undoAction.Arguments.Add(""); // TODO get recycled path...
+                                //undoHistory.Push(undoAction);
+                            }
+                            Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(pictureBox.ImageLocation, 
+                                Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, 
+                                (Microsoft.VisualBasic.FileIO.RecycleOption)hotkeySettings.Tag);
+                            pictureBox.ImageLocation = traverser?.RemoveCurrent()?.Name ?? "";
+                            break;
+                        }
+                    case Actions.FullScreen:
+                        {
+                            if (fullScreen.Visible)
+                            {
+                                fullScreen.UpdatePictureBox();
+                                fullScreen.Show();
+                            }
+                            else
+                            {
+                                fullScreen.Hide();
+                            }
+                            break;
+                        }
+                    case Actions.NextFile:
+                        {
+                            Next();
+                            break;
+                        }
+                    case Actions.PreviousFile:
+                        {
+                            Previous();
+                            break;
+                        }
+                    case Actions.Skip:
+                        {
+                            for (int i = 0; i < int.Parse(hotkeySettings.Arguments[0]); i++)
+                                Next();
+                            break;
+                        }
+                    case Actions.UpDirectory:
+                        {
+                            // Can't be root or favorites folder
+                            if (folderBrowser.SelectedNode.Parent.Exists() && !folderBrowser.SelectedNode.Parent.Tag.Exists())
+                                folderBrowser.SelectedNode = folderBrowser.SelectedNode.Parent;
+                            break;
+                        }
+                    case Actions.PreviousDirectory:
+                        {
+                            folderBrowser.SelectedNode = folderBrowser.SelectedNode.PrevNode;
+                            break;
+                        }
+                    case Actions.NextDirectory:
+                        {
+                            folderBrowser.SelectedNode = folderBrowser.SelectedNode.NextNode;
+                            break;
+                        }
+                    case Actions.Rename:
+                        {
+                            UndoActions undoAction = new UndoActions();
+                            undoAction.Arguments.Add(traverser.Index.ToString());
+                            undoAction.Arguments.Add(traverser.GetCurrent().FullName);
+
+                            Rename rename = new Rename(this);
+                            rename.ShowDialog();    // Don't allow interaction with parent until this dialog closes (prevent changing selection while editing)
+
+                            undoAction.Arguments.Add(""); // TODO add renamed file (this could have moved to another folder potentially, unless I want to prevent that)
+                            //undoHistory.Push(undoAction);
+                            break;
+                        }
+                    case Actions.Open:
+                        {
+                            Process myProcess = new Process();
+                            myProcess.StartInfo.FileName = hotkeySettings.Arguments[0];
+                            myProcess.StartInfo.Arguments = pictureBox.ImageLocation;
+                            myProcess.Start();
+                            break;
+                        }
+                    case Actions.Mode:
+                        {
+                            SetMode((Modes)hotkeySettings.Tag);
+                            break;
+                        }
+                    default:
+                        {
+                            break;
+                        }
+                }
             }
-            /*
-            switch (e.KeyCode)
-            {
-                case Keys.Left:
-                    Previous();
-                    e.Handled = true;
-                    break;
-                case Keys.Right:
-                    Next();
-                    e.Handled = true;
-                    break;
-                default:
-                    break;
-            }
-            */
         }
 
         private void Previous()
         {
-            try
-            {
-                pictureBox.ImageLocation = traverser.MovePrevious().FullName;
-            }
-            catch (NullReferenceException ex)
-            {
-                pictureBox.ImageLocation = "";
-            }
+            pictureBox.ImageLocation = traverser?.MovePrevious()?.FullName ?? "";
+            UpdateStatusStrip();
         }
 
         private void Next()
         {
-            try
-            {
-                pictureBox.ImageLocation = traverser.MoveNext().FullName;
-            }
-            catch (NullReferenceException ex)
-            {
-                pictureBox.ImageLocation = "";
-            }
+            pictureBox.ImageLocation = traverser?.MoveNext()?.FullName ?? "";
+            UpdateStatusStrip();
         }
 
-        private void folderBrowser_MouseClick(object sender, MouseEventArgs e)
+        private void UpdateStatusStrip()
+        {
+            statusLabel_Index.Text = traverser?.Index.ToString() ?? "0" + "/" + traverser?.Count ?? "0";
+        }
+
+        private void FolderBrowser_MouseClick(object sender, MouseEventArgs e)
         {
             CheckXButtons(e);
 
@@ -310,26 +569,31 @@ namespace Org
             CheckXButtons(e);
         }
 
-        public void pictureBox_MouseClick(object sender, MouseEventArgs e)
+        public void PictureBox_MouseClick(object sender, MouseEventArgs e)
         {
             CheckXButtons(e);
         }
 
-        private void pictureBox_MouseEnter(object sender, EventArgs e)
+        private void PictureBox_MouseEnter(object sender, EventArgs e)
         {
-            if (pictureBox.Focused == false)
+            if (!pictureBox.Focused && !settings.Visible)
             {
                 pictureBox.Focus();
             }
         }
 
-        private void pictureBox_DoubleClick(object sender, MouseEventArgs e)
+        private void PictureBox_DoubleClick(object sender, MouseEventArgs e)
         {
             if (e.Button.Equals(MouseButtons.Left))
             {
                 fullScreen.UpdatePictureBox();
                 fullScreen.Show();
             }
+        }
+
+        private void SettingsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            settings.Show();
         }
     }
 }

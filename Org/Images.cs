@@ -12,42 +12,40 @@ namespace Org
     class Images : ITraversable<FileInfo>
     {
         private Random random;
-        public string currentDirectory { get; set; }
+        public string CurrentDirectory { get; set; }
         private DirectoryInfo directoryInfo;
         private List<FileInfo> fileInfos;
-        private int fileInfosIndex;
 
-        public List<string> extensions { get; set; }
-        public SearchOption searchOption { get; set; }
+        public List<string> Extensions { get; set; }
+        public SearchOption SearchOption { get; set; }
 
         public Images(string _currentDirectory = @"C:\", int? _seed = null, string _extensions = "*.jpg, *.jpeg, *.png, *.bmp, *.gif", SearchOption _searchOption = SearchOption.TopDirectoryOnly)
         {
             random = new Random(_seed ?? (int)((DateTime.UtcNow - DateTime.MinValue).TotalMilliseconds % int.MaxValue));
-            currentDirectory = _currentDirectory;
-            searchOption = _searchOption;
+            CurrentDirectory = _currentDirectory;
+            SearchOption = _searchOption;
             fileInfos = new List<FileInfo>();
-            extensions = Regex.Split(Regex.Replace(_extensions, @"\s+", ""), ",").ToList();
+            Extensions = Regex.Split(Regex.Replace(_extensions, @"\s+", ""), ",").ToList();
             LoadCurrentDirectory();
         }
 
         public void LoadCurrentDirectory()
         {
             fileInfos = new List<FileInfo>();
-            fileInfosIndex = 0;
-            if (currentDirectory != "" && Directory.Exists(currentDirectory))
+            if (CurrentDirectory != "" && Directory.Exists(CurrentDirectory))
             {
-                directoryInfo = new DirectoryInfo(currentDirectory);
+                directoryInfo = new DirectoryInfo(CurrentDirectory);
                 fileInfos = new List<FileInfo>();
                 try
                 {
-                    foreach (string s in extensions)
+                    foreach (string s in Extensions)
                     {
-                        fileInfos.AddRange(directoryInfo.EnumerateFiles(s, searchOption).ToList());
+                        fileInfos.AddRange(directoryInfo.EnumerateFiles(s, SearchOption).ToList());
                     }
                 }
                 catch (UnauthorizedAccessException ex)
                 {
-
+                    Log.AddLogMessage(Log.LogLevels.Warning, "Unauthorized folder access. Exception: " + ex.Message);
                 }
             }
         }

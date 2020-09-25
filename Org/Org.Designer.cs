@@ -31,12 +31,13 @@
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.modeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.browseToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.organizeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.randomizeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip = new System.Windows.Forms.StatusStrip();
-            this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.statusLabel_Index = new System.Windows.Forms.ToolStripStatusLabel();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.tabControl = new System.Windows.Forms.TabControl();
             this.tabPageDirectory = new System.Windows.Forms.TabPage();
@@ -77,9 +78,18 @@
             // 
             // editToolStripMenuItem
             // 
+            this.editToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.settingsToolStripMenuItem});
             this.editToolStripMenuItem.Name = "editToolStripMenuItem";
             this.editToolStripMenuItem.Size = new System.Drawing.Size(39, 20);
             this.editToolStripMenuItem.Text = "Edit";
+            // 
+            // settingsToolStripMenuItem
+            // 
+            this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(116, 22);
+            this.settingsToolStripMenuItem.Text = "Settings";
+            this.settingsToolStripMenuItem.Click += new System.EventHandler(this.SettingsToolStripMenuItem_Click);
             // 
             // modeToolStripMenuItem
             // 
@@ -96,37 +106,37 @@
             this.browseToolStripMenuItem.Name = "browseToolStripMenuItem";
             this.browseToolStripMenuItem.Size = new System.Drawing.Size(133, 22);
             this.browseToolStripMenuItem.Text = "Browse";
-            this.browseToolStripMenuItem.Click += new System.EventHandler(this.browseToolStripMenuItem_Click);
+            this.browseToolStripMenuItem.Click += new System.EventHandler(this.BrowseToolStripMenuItem_Click);
             // 
             // organizeToolStripMenuItem
             // 
             this.organizeToolStripMenuItem.Name = "organizeToolStripMenuItem";
             this.organizeToolStripMenuItem.Size = new System.Drawing.Size(133, 22);
             this.organizeToolStripMenuItem.Text = "Organize";
-            this.organizeToolStripMenuItem.Click += new System.EventHandler(this.organizeToolStripMenuItem_Click);
+            this.organizeToolStripMenuItem.Click += new System.EventHandler(this.OrganizeToolStripMenuItem_Click);
             // 
             // randomizeToolStripMenuItem
             // 
             this.randomizeToolStripMenuItem.Name = "randomizeToolStripMenuItem";
             this.randomizeToolStripMenuItem.Size = new System.Drawing.Size(133, 22);
             this.randomizeToolStripMenuItem.Text = "Randomize";
-            this.randomizeToolStripMenuItem.Click += new System.EventHandler(this.randomizeToolStripMenuItem_Click);
+            this.randomizeToolStripMenuItem.Click += new System.EventHandler(this.RandomizeToolStripMenuItem_Click);
             // 
             // statusStrip
             // 
             this.statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripStatusLabel1});
+            this.statusLabel_Index});
             this.statusStrip.Location = new System.Drawing.Point(0, 728);
             this.statusStrip.Name = "statusStrip";
             this.statusStrip.Size = new System.Drawing.Size(1166, 22);
             this.statusStrip.TabIndex = 1;
             this.statusStrip.Text = "statusStrip1";
             // 
-            // toolStripStatusLabel1
+            // statusLabel_Index
             // 
-            this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-            this.toolStripStatusLabel1.Size = new System.Drawing.Size(118, 17);
-            this.toolStripStatusLabel1.Text = "toolStripStatusLabel1";
+            this.statusLabel_Index.Name = "statusLabel_Index";
+            this.statusLabel_Index.Size = new System.Drawing.Size(24, 17);
+            this.statusLabel_Index.Text = "0/0";
             // 
             // splitContainer1
             // 
@@ -176,10 +186,10 @@
             this.folderBrowser.Name = "folderBrowser";
             this.folderBrowser.Size = new System.Drawing.Size(139, 672);
             this.folderBrowser.TabIndex = 0;
-            this.folderBrowser.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.folderBrowser_BeforeExpand);
-            this.folderBrowser.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.folderBrowser_NodeMouseClick);
+            this.folderBrowser.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.FolderBrowser_BeforeExpand);
+            this.folderBrowser.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.FolderBrowser_NodeMouseClick);
             this.folderBrowser.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Org_KeyDown);
-            this.folderBrowser.MouseClick += new System.Windows.Forms.MouseEventHandler(this.folderBrowser_MouseClick);
+            this.folderBrowser.MouseClick += new System.Windows.Forms.MouseEventHandler(this.FolderBrowser_MouseClick);
             // 
             // tabPageFiles
             // 
@@ -210,9 +220,9 @@
             this.pictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBox.TabIndex = 0;
             this.pictureBox.TabStop = false;
-            this.pictureBox.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pictureBox_MouseClick);
-            this.pictureBox.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.pictureBox_DoubleClick);
-            this.pictureBox.MouseEnter += new System.EventHandler(this.pictureBox_MouseEnter);
+            this.pictureBox.MouseClick += new System.Windows.Forms.MouseEventHandler(this.PictureBox_MouseClick);
+            this.pictureBox.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.PictureBox_DoubleClick);
+            this.pictureBox.MouseEnter += new System.EventHandler(this.PictureBox_MouseEnter);
             // 
             // Org
             // 
@@ -254,14 +264,15 @@
         private System.Windows.Forms.TabPage tabPageDirectory;
         private System.Windows.Forms.TreeView folderBrowser;
         private System.Windows.Forms.TabPage tabPageFiles;
-        private System.Windows.Forms.PictureBox pictureBox;
+        internal System.Windows.Forms.PictureBox pictureBox;
         private System.Windows.Forms.ListView listView1;
         private System.Windows.Forms.ToolStripMenuItem editToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem modeToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem browseToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem organizeToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem randomizeToolStripMenuItem;
-        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
+        private System.Windows.Forms.ToolStripStatusLabel statusLabel_Index;
+        private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
     }
 }
 

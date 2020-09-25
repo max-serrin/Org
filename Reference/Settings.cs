@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace Reference
@@ -14,10 +11,14 @@ namespace Reference
     {
         // Global Variables
         public int maxWidth, maxHeight;                 // Defined in parent form
-        public Boolean onTop;
+        public bool onTop;
         public int hh, mm, ss;
         public int timerBuffer;
-        public Boolean copy, searchAll;
+        public bool copy, searchAll, useWhitelist, useBlacklist;
+        public List<string> ext, whitelist, blacklist;
+        public string fileNameFilter, fileListPath, fileList;
+
+        public bool exitStatus = false;
 
         private Reference parentForm;                       // Parent form to run public functions
 
@@ -35,7 +36,25 @@ namespace Reference
         /// <param name="timerBuffer"></param>
         /// <param name="copy"></param>
         /// <param name="searchAll"></param>
-        public Settings(Reference parentForm, int maxWidth, int maxHeight, Boolean onTop, int hh, int mm, int ss, int timerBuffer, Boolean copy, Boolean searchAll)
+        public Settings(
+            Reference parentForm, 
+            int maxWidth, 
+            int maxHeight, 
+            bool onTop, 
+            int hh, 
+            int mm, 
+            int ss, 
+            int timerBuffer, 
+            bool copy, 
+            bool searchAll, 
+            List<string> ext, 
+            List<string> whitelist, 
+            List<string> blacklist, 
+            bool useWhitelist, 
+            bool useBlacklist, 
+            string fileNameFilter, 
+            string fileListPath, 
+            string fileList)
         {
             InitializeComponent();
             this.parentForm = parentForm;
@@ -45,6 +64,14 @@ namespace Reference
             this.timerBuffer = timerBuffer;
             this.copy = copy;
             this.searchAll = searchAll;
+            this.ext = ext;
+            this.whitelist = whitelist;
+            this.blacklist = blacklist;
+            this.useWhitelist = useWhitelist;
+            this.useBlacklist = useBlacklist;
+            this.fileNameFilter = fileNameFilter;
+            this.fileListPath = fileListPath;
+            this.fileList = fileList;
         }
 
         /// <summary>
@@ -106,6 +133,14 @@ namespace Reference
             else
                 cbCopy.Text = "Cut";
             cbSearchAll.Checked = searchAll;
+            tbExtensions.Text = ext?.Aggregate((a, b) => a + ", " + b);
+            if (whitelist.Count > 0) tbWhitelist.Text = whitelist?.Aggregate((a, b) => a + "\r\n" + b);
+            if (blacklist.Count > 0) tbBlacklist.Text = blacklist?.Aggregate((a, b) => a + "\r\n" + b);
+            cbUseWhitelist.Checked = useWhitelist;
+            cbUseBlacklist.Checked = useBlacklist;
+            tbFileNameFilter.Text = fileNameFilter;
+            tbListFileName.Text = fileListPath;
+            tbListFileContents.Text = fileList;
         }
 
         /// <summary>
@@ -142,6 +177,71 @@ namespace Reference
             onTop = cbOnTop.Checked;
         }
 
+        private void cbUseWhitelist_CheckedChanged(object sender, EventArgs e)
+        {
+            useWhitelist = cbUseWhitelist.Checked;
+        }
+
+        private void cbUseBlacklist_CheckedChanged(object sender, EventArgs e)
+        {
+            useBlacklist = cbUseBlacklist.Checked;
+        }
+
+        private void tbFileNameFilter_TextChanged(object sender, EventArgs e)
+        {
+            fileNameFilter = tbFileNameFilter.Text;
+        }
+
+        private void tbListFileContents_TextChanged(object sender, EventArgs e)
+        {
+            fileList = tbListFileContents.Text;
+        }
+
+        private void tbListFileName_TextChanged(object sender, EventArgs e)
+        {
+            fileListPath = tbListFileName.Text;
+        }
+
+        private void Ok_Click(object sender, EventArgs e)
+        {
+            exitStatus = true;
+            Close();
+        }
+
+        private void Cancel_Click(object sender, EventArgs e)
+        {
+            exitStatus = false;
+            Close();
+        }
+
+        private void Open_Click(object sender, EventArgs e)
+        {
+            var fileDialog = new OpenFileDialog();
+            fileDialog.Multiselect = false;
+            fileDialog.CheckFileExists = true;
+            fileDialog.CheckPathExists = true;
+
+            if (fileDialog.ShowDialog() == DialogResult.OK)
+            {
+                OpenFile(fileDialog.FileName);
+            }
+        }
+
+        private void OpenFile(string fileName)
+        {
+            if (System.IO.File.Exists(fileName))
+            {
+                tbListFileContents.Text = "";
+
+                var lines = System.IO.File.ReadAllLines(fileName);
+                foreach (var line in lines)
+                {
+                    if (System.IO.File.Exists(line))
+                        tbListFileContents.Text += line + Environment.NewLine;
+                }
+            }
+        }
+
         /// <summary>
         /// Handle change of search option. Save boolean value of checked property.
         /// </summary>
@@ -152,6 +252,19 @@ namespace Reference
             searchAll = cbSearchAll.Checked;
         }
 
+        private void Settings_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (exitStatus)
+            {
+                ext = Regex.Replace(tbExtensions.Text, @"\s+", string.Empty).Split(',').ToList();
+                ext.RemoveAll(s => s.Length < 3 && !s.StartsWith("*."));
+                whitelist = Regex.Replace(tbWhitelist.Text.Replace(";", string.Empty), "\\s*\r\n+", "\r\n").Split("\r\n".ToCharArray()).Select(s => s.Trim()).ToList();
+                whitelist.RemoveAll(s => s == "");
+                blacklist = Regex.Replace(tbBlacklist.Text.Replace(";", string.Empty), "\\s*\r\n+", "\r\n").Split("\r\n".ToCharArray()).Select(s => s.Trim()).ToList();
+                blacklist.RemoveAll(s => s == "");
+            }
+        }
+
         /// <summary>
         /// Check key press parameter, close form if Enter is received.
         /// </summary>
@@ -160,7 +273,7 @@ namespace Reference
         {
             if (e.KeyData == Keys.Enter)
             {
-                this.Close();
+                Close();
             }
         }
 
@@ -284,6 +397,34 @@ namespace Reference
                 cbCopy.Text = "Copy";
             else
                 cbCopy.Text = "Cut";
+        }
+
+        private void TextBox_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+                e.Effect = DragDropEffects.All;
+            else
+                e.Effect = DragDropEffects.None;
+        }
+
+        private void TextBox_DragDrop(object sender, DragEventArgs e)
+        {
+            string[] s = (string[])e.Data.GetData(DataFormats.FileDrop, false);
+            string filePaths = s.Aggregate((content, ss) => content.Length < 2 ? ss : content + Environment.NewLine + ss);
+            tbListFileContents.Text = tbListFileContents.Text.Length < 2 ? filePaths : tbListFileContents.Text + Environment.NewLine + filePaths;
+        }
+
+        private void OpenFile_DragDrop(object sender, DragEventArgs e)
+        {
+            string[] s = (string[])e.Data.GetData(DataFormats.FileDrop, false);
+            if (s.Length > 0)
+            {
+                if (System.IO.File.Exists(s[0]))
+                {
+                    tbListFileName.Text = s[0];
+                    OpenFile(s[0]);
+                }
+            }
         }
     }
 }

@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Net;
 using System.IO;
+using mshtml;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace DL
 {
@@ -29,7 +32,7 @@ namespace DL
         Boolean autoDLFlag;
 
         // Download Counter
-        int dlcount = 0;
+        int dlcount = 0, dlcount_CoedCherry = 0, dlcount_Tumblr = 0;
         List<int> dlcounts;
 
         // Background workers for downloading
@@ -40,7 +43,10 @@ namespace DL
         {
             InitializeComponent();
 
-            websiteList = File.ReadAllLines(@"C:\Users\Mark\Desktop\New folder\dl.txt").ToList<string>();
+
+            // TAB - Fusker
+            if (File.Exists(@"C:\Users\Mark\Desktop\New folder\dl.txt"))
+                websiteList = File.ReadAllLines(@"C:\Users\Mark\Desktop\New folder\dl.txt").ToList();
 
             // Setup background work
             bw.WorkerReportsProgress = true;
@@ -49,9 +55,12 @@ namespace DL
             bw.ProgressChanged += new ProgressChangedEventHandler(bw_ProgressChanged);
             bw.RunWorkerCompleted += new RunWorkerCompletedEventHandler(bw_RunWorkerCompleted);
 
-            if (websiteList.Count > 0)
+            if (websiteList?.Count > 0)
                 bAutoDL.Enabled = true;
             autoDLFlag = false;
+
+
+            // TAB - CoedCherry
         }
 
         /*
@@ -249,6 +258,7 @@ namespace DL
         private static bool DownloadRemoteImageFile(string uri, string fileName, string i_ext)
         {
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(uri);
+            request.Timeout = 5000;
             HttpWebResponse response;
             try
             {
@@ -337,7 +347,7 @@ namespace DL
                 //client.Encoding = gb;
                 // Get page
                 string data = client.DownloadString(site);
-                List<string> dlist = data.Split('\n').ToList<string>();
+                List<string> dlist = data.Split('\n').ToList();
 
                 // Get encoding
                 int i;
@@ -345,9 +355,9 @@ namespace DL
                     if (dlist[i].Contains("charset"))
                         break;
                 string charset = dlist[i];
-                List<string> charset_break = charset.Split('"').ToList<string>();
+                List<string> charset_break = charset.Split('"').ToList();
                 charset = charset_break[3];
-                charset_break = charset.Split('=').ToList<string>();
+                charset_break = charset.Split('=').ToList();
                 charset = charset_break[1];
 
                 // Redownload page with encoding
@@ -356,14 +366,14 @@ namespace DL
                 data = client.DownloadString(site);
 
                 // Get album title
-                dlist = data.Split('\n').ToList<string>();
+                dlist = data.Split('\n').ToList();
                 for (; i < dlist.Count; i++)
                     if (dlist[i].Contains("<h1>"))
                         break;
                 string title = dlist[i];
-                List<string> title_break = title.Split('>').ToList<string>();
+                List<string> title_break = title.Split('>').ToList();
                 title = title_break[2];
-                title_break = title.Split('<').ToList<string>();
+                title_break = title.Split('<').ToList();
                 title = title_break[0];
 
                 // Get fusker link for album
@@ -371,7 +381,7 @@ namespace DL
                     if (dlist[i].Contains("img src="))
                         break;
                 string image = dlist[i];
-                List<string> image_break = image.Split('\'').ToList<string>();
+                List<string> image_break = image.Split('\'').ToList();
                 image = image_break[5];
                 string image_first = image.Substring(0, image.LastIndexOf("/") + 1);
 
@@ -407,6 +417,251 @@ namespace DL
 
                 // Start downloading
                 bw.RunWorkerAsync();
+            }
+        }
+
+        private void buttonDownload_CoedCherry_Click(object sender, EventArgs e)
+        {
+            dlcount_CoedCherry = 0;
+            string modelName = textBoxModelName_CoedCherry.Text.Trim();
+            string id = textBoxId_CoedCherry.Text.Trim();
+
+            List<Tuple<string, string>> galleries = new List<Tuple<string,string>>();
+            using (WebClient client = new WebClient())
+            {
+                foreach (HtmlElement link in GetHtmlDocument(
+                    client.DownloadString(@"https://www.coedcherry.com/models/" + (id.Length > 0 ? modelName + "?id=" + id : modelName))).Links)
+                {
+                    if (link.OuterHtml.Contains("galleries") && ReferenceEquals(link.OuterText, null))
+                    {
+                        int indexTitle = link.OuterHtml.IndexOf("title=") + "title=".Length + 1;
+                        int lengthTitle = link.OuterHtml.IndexOf("\" class") - indexTitle;
+                        if (lengthTitle < 0)
+                        {
+                            lengthTitle = link.OuterHtml.IndexOf("' class") - indexTitle;
+                        }
+                        int indexGalleries = link.OuterHtml.IndexOf(".coedcherry.com/") + ".coedcherry.com/".Length;
+                        int lengthGalleries = link.OuterHtml.IndexOf("/th180") - indexGalleries;
+                        galleries.Add(new Tuple<string, string>(
+                            link.OuterHtml.Substring(indexTitle, lengthTitle), 
+                            link.OuterHtml.Substring(indexGalleries, lengthGalleries)));
+                    }
+                }
+            }
+
+            foreach (Tuple<string,string> gallery in galleries)
+            {
+                string fileLink = @"https://content4.coedcherry.com/" + gallery.Item2 + "/";
+                string saveDirectory = @"C:\Temp\" + modelName + @"\" + gallery.Item1 + @"\";
+                saveDirectory = saveDirectory.Replace('"', '\'');
+                if (!Directory.Exists(saveDirectory))
+                {
+                    Directory.CreateDirectory(saveDirectory);
+                }
+
+                using (WebClient client = new WebClient())
+                {
+                    List<string> galleryLinks = new List<string>();
+                    string url = @"https://www.coedcherry.com/models/" + modelName + "/galleries/" + gallery.Item2.Substring(gallery.Item2.IndexOf("/") + 1);
+                    foreach (HtmlElement link in GetHtmlDocument(client.DownloadString(url)).Links)
+                    {
+                        if (link.OuterHtml.Contains("content") && ReferenceEquals(link.OuterText, null))
+                        {
+                            int indexContent = link.OuterHtml.IndexOf("<A href=\"") + "<A href=\"".Length;
+                            int lengthContent = link.OuterHtml.IndexOf("\" target") - indexContent;
+                            galleryLinks.Add(link.OuterHtml.Substring(indexContent, lengthContent));
+                        }
+                    }
+                    foreach (string galleryLink in galleryLinks)
+                    {
+                        string fileName = galleryLink.Substring(galleryLink.LastIndexOf("/") + 1);
+                        if(DownloadRemoteImageFile(
+                            @"https://www.coedcherry.com" + galleryLink,
+                            saveDirectory + fileName,
+                            "jpeg"))
+                        {
+                            downloadCount_CoedCherry.Text = (++dlcount_CoedCherry).ToString();
+                            downloadCount_CoedCherry.Refresh();
+                        }
+
+                    }
+                }
+            }
+            downloadCount_CoedCherry.Text += " done.";
+        }
+
+        private void buttonDownload_Tumblr_Click(object sender, EventArgs e)
+        {
+            dlcount_Tumblr = 0;
+            string api_prefix = @"https://api.tumblr.com/v2/blog/";
+            string siteName = textBoxLink_Tumblr.Text + ".tumblr.com";
+            //string api_key = @"api_key=fuiKNFp9vQFvjLNvx4sUwti4Yb5yGutBN4Xh10LXZhhRKjWlV4";
+            //NB6MviShLWaTpod8ZdeFWh8NJctrruANFZ79xcRg9UTwqkrHLg
+            //np1J08dGSk6PoIesda028qGbGKz4CqjdKCbGfxN39LFDxb9gbC
+            string api_key = @"api_key=6x2rD9bLRuKXeIMdzRKGP0QkLHnTWKlI8zFdJ5DmXxSdXSnjHN";
+            int offsetStart = (int)numericOffset_Tumblr.Value;
+            int totalPosts = 0;
+            //List<string> downloadUrls = new List<string>();
+            List<string> exceptionUrls = new List<string>();
+            string saveDirectory = @"C:\Temp\" + siteName + @"\";
+            if (!Directory.Exists(saveDirectory))
+            {
+                Directory.CreateDirectory(saveDirectory);
+            }
+
+            using (WebClient client = new WebClient())
+            {
+                string json = client.DownloadString(api_prefix + siteName + "/posts/photo?offset=0&limit=1&" + api_key);
+                dynamic o = JsonConvert.DeserializeObject(json);
+                totalPosts = Convert.ToInt32(o.response.total_posts.Value);
+            }
+
+            for (int offset = offsetStart; offset < totalPosts; offset += 20)
+            {
+                numericOffset_Tumblr.Value = offset;
+                numericOffset_Tumblr.Refresh();
+                using (WebClient client = new WebClient())
+                {
+                    string json = client.DownloadString(api_prefix + siteName + "/posts/photo?offset=" + offset.ToString() + "&limit=20&" + api_key);
+                    dynamic o = JsonConvert.DeserializeObject(json);
+                    foreach (dynamic post in o.response.posts)
+                    {
+                        foreach (dynamic photo in post.photos)
+                        {
+                            string fileLink = photo.original_size.url.Value;
+                            string fileName = fileLink.Substring(fileLink.LastIndexOf("/") + 1);
+                            //if (DownloadRemoteImageFile(
+                            //        fileLink,
+                            //        saveDirectory + fileName,
+                            //        "jpeg"))
+                            //{
+                            //    downloadCount_Tumblr.Text = (++dlcount_Tumblr).ToString();
+                            //    downloadCount_Tumblr.Refresh();
+                            //}
+                            try
+                            {
+                                client.DownloadFile(fileLink, saveDirectory + fileName);
+                                downloadCount_Tumblr.Text = (++dlcount_Tumblr).ToString();
+                                downloadCount_Tumblr.Refresh();
+                            }
+                            catch (Exception ex)
+                            {
+                                if (!ex.Message.Contains("404"))
+                                    exceptionUrls.Add(fileLink);
+                            }
+                            //System.Threading.Thread.Sleep(1000);
+                        }
+                    }
+                }
+            }
+
+            //string site = @"http://" + siteName + @"/archive/";
+
+            //using (WebClient client = new WebClient())
+            //{
+            //    string link = site + year.ToString() + "/" + month.ToString() + "?before_time=" + beforeTime.ToString();
+            //    string data = client.DownloadString(link);
+            //    if (data.Contains("<!-- START CONTENT -->"))
+            //    {
+            //        int contentIndex = data.IndexOf("<!-- START CONTENT -->");
+            //        int contentLength = data.IndexOf("<!-- END CONTENT -->") - contentIndex;
+            //        data = data.Substring(contentIndex, contentLength);
+            //        List<string> splitData = data.Split(new string[] { "data-imageurl=\"" }, StringSplitOptions.None).ToList();
+            //        splitData.RemoveAt(0);
+            //        List<string> dataLinks = new List<string>();
+            //        foreach (string split in splitData)
+            //        {
+            //            string sizeFixSplit = split.Replace("_250.jpg", "_1280.jpg");
+            //            sizeFixSplit = sizeFixSplit.Substring(0, sizeFixSplit.IndexOf("\""));
+
+            //            string fileName = sizeFixSplit.Substring(sizeFixSplit.LastIndexOf("/") + 1);
+            //            if (DownloadRemoteImageFile(
+            //                    sizeFixSplit,
+            //                    saveDirectory + fileName,
+            //                    "jpeg"))
+            //            {
+            //                downloadCount_Tumblr.Text = (++dlcount_Tumblr).ToString();
+            //                downloadCount_Tumblr.Refresh();
+            //            }
+            //        }
+            //    }
+            //}
+        }
+
+        public System.Windows.Forms.HtmlDocument GetHtmlDocument(string html)
+        {
+            WebBrowser browser = new WebBrowser();
+            browser.ScriptErrorsSuppressed = true;
+            browser.DocumentText = html;
+            browser.Document.OpenNew(true);
+            browser.Document.Write(html);
+            browser.Refresh();
+            return browser.Document;
+        }
+
+        private void buttonDownload_trishdavis9_Click(object sender, EventArgs e)
+        {
+            //FileStream data = File.Open(@"C:\Users\mouri\OneDrive\Projects\Visual Studio\Org\DL\Resources\trishdavis9.html", FileMode.Open);
+            List<string> exceptionLinks = new List<string>();
+            
+            string saveDirectory = @"C:\Temp\trishdavis9\";
+            if (!Directory.Exists(saveDirectory))
+            {
+                Directory.CreateDirectory(saveDirectory);
+            }
+
+            using (WebClient client = new WebClient())
+            {
+                HtmlDocument doc = GetHtmlDocument(File.ReadAllText(@"C:\Users\mouri\OneDrive\Projects\Visual Studio\Org\DL\Resources\trishdavis9.html"));
+                foreach (HtmlElement link in doc.Links)
+                {
+                    if (link.OuterHtml.Contains("data-big-photo=\""))
+                    {
+                        string partialLink = link.OuterHtml.Substring(link.OuterHtml.IndexOf("data-big-photo=\"") + "data-big-photo=\"".Length);
+                        string fileLink = partialLink.Substring(0, partialLink.IndexOf('"'));
+                        string fileName = fileLink.Substring(fileLink.LastIndexOf("/") + 1);
+                        try
+                        {
+                            client.DownloadFile(fileLink, saveDirectory + fileName);
+                        }
+                        catch (Exception ex)
+                        {
+                            exceptionLinks.Add(fileLink);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void buttonDownload_tdavis_Click(object sender, EventArgs e)
+        {
+            List<string> exceptionLinks = new List<string>();
+
+            string saveDirectory = @"C:\Temp\tdavis\";
+            if (!Directory.Exists(saveDirectory))
+            {
+                Directory.CreateDirectory(saveDirectory);
+            }
+
+            using (WebClient client = new WebClient())
+            {
+                string data = File.ReadAllText(@"C:\Users\mouri\OneDrive\Projects\Visual Studio\Org\DL\Resources\tdavis.html");
+                foreach (string split in data.Split(new string[] { "background-image:url(" }, StringSplitOptions.None))
+                {
+                    if (split.StartsWith("/cdn"))
+                    {
+                        string fileLink = "http://www.jhphawaii.com" + split.Substring(0, split.IndexOf("-11.jpg")) + "-4.jpg";
+                        string fileName = fileLink.Substring(fileLink.LastIndexOf("/") + 1);
+                        try
+                        {
+                            client.DownloadFile(fileLink, saveDirectory + fileName);
+                        }
+                        catch (Exception ex)
+                        {
+                            exceptionLinks.Add(fileLink);
+                        }
+                    }
+                }
             }
         }
     }

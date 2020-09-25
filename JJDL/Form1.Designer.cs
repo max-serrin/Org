@@ -38,6 +38,8 @@
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.button2 = new System.Windows.Forms.Button();
+            this.nPages = new System.Windows.Forms.NumericUpDown();
+            ((System.ComponentModel.ISupportInitialize)(this.nPages)).BeginInit();
             this.SuspendLayout();
             // 
             // button1
@@ -131,11 +133,24 @@
             this.button2.UseVisualStyleBackColor = true;
             this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
+            // nPages
+            // 
+            this.nPages.Location = new System.Drawing.Point(213, 104);
+            this.nPages.Maximum = new decimal(new int[] {
+            999,
+            0,
+            0,
+            0});
+            this.nPages.Name = "nPages";
+            this.nPages.Size = new System.Drawing.Size(41, 20);
+            this.nPages.TabIndex = 10;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(278, 155);
+            this.Controls.Add(this.nPages);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
@@ -148,6 +163,7 @@
             this.Controls.Add(this.button1);
             this.Name = "Form1";
             this.Text = "JJ Downloader";
+            ((System.ComponentModel.ISupportInitialize)(this.nPages)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -165,6 +181,7 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.NumericUpDown nPages;
     }
 }
 

@@ -42,17 +42,21 @@ namespace JJDL
                 Directory.CreateDirectory(dir);
 
             exists = true;
+            int pages = (int)nPages.Value;
             int dlcount = 0;
             int excount = 0;
 
-            for (int i = 1; exists; i++)
+            
+
+            for (int i = 1; (pages > 0 && i <= pages) || exists; i++)
             {
-                for (int j = 1; j <= 12 & exists; j++)
+                for (int j = 1; j <= 12; j++)
                 {
-                    string f = @"C:\Users\Mark\Pictures\Uplay\" + girl + @"\" + girl + "_" + i + "-" + j + ".jpg";
-                    if (!File.Exists(f) && exists)
+                    string file = @"C:\Users\Mark\Pictures\Uplay\" + girl + @"\" + girl + "_" + i + "-" + j + ".jpg";
+                    if (!File.Exists(file))
                     {
-                        exists = DownloadRemoteImageFile(base_url + girl + "/" + i + "/" + girl + "-" + j + ".jpg", f);
+                        string link = base_url + girl + "/" + i + "/" + girl + "-" + j + ".jpg";
+                        exists = DownloadRemoteImageFile(link, file);
                         if (exists)
                             worker.ReportProgress(++dlcount);
                     }
@@ -61,8 +65,6 @@ namespace JJDL
                         //lscount.Text = (++excount).ToString();
                         ++excount;
                     }
-
-                    
                 }
             }
 
@@ -82,12 +84,13 @@ namespace JJDL
         private static bool DownloadRemoteImageFile(string uri, string fileName)
         {
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(uri);
+            request.Timeout = 5000;
             HttpWebResponse response;
             try
             {
                 response = (HttpWebResponse)request.GetResponse();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return false;
             }

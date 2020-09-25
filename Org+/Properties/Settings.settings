@@ -5,5 +5,17 @@
     <Setting Name="folderPath" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
+    <Setting Name="left_click" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Move23</Value>
+    </Setting>
+    <Setting Name="right_click" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Move01</Value>
+    </Setting>
+    <Setting Name="middle_click" Type="System.String" Scope="User">
+      <Value Profile="(Default)">tass</Value>
+    </Setting>
+    <Setting Name="delete" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Delete</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
